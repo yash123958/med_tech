@@ -1,0 +1,276 @@
+{% include 'navbar.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+    background: linear-gradient(135deg, #dfe9f3, #fce4ec);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+h3 {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* STATS */
+.card-box {
+    padding: 18px;
+    border-radius: 14px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.stat1 { background: linear-gradient(45deg, #36d1dc, #5b86e5); }
+.stat2 { background: linear-gradient(45deg, #ff758c, #ff7eb3); }
+.stat3 { background: linear-gradient(45deg, #f7971e, #ffd200); }
+.stat4 { background: linear-gradient(45deg, #43e97b, #38f9d7); }
+
+/* TABLE */
+.table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.table th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background: #f9fbfd;
+}
+
+/* BADGES */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* BUTTONS */
+.btn-approve {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border: none;
+}
+
+.btn-reject {
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    color: white;
+    border: none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+<h3 class="mb-4">Admin Dashboard</h3>
+
+<!-- STATS -->
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card-box stat1">
+            <h6>Total Donations</h6>
+            <h3>{{ donations|length }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-box stat2">
+            <h6>Total Requests</h6>
+            <h3>{{ requests|length }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-box stat3">
+            <h6>Pending Requests</h6>
+            <h3>{{ pending_requests }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-box stat4">
+            <h6>Approved Requests</h6>
+            <h3>{{ approved_requests }}</h3>
+        </div>
+    </div>
+
+</div>
+
+<!-- DONATIONS TABLE -->
+<div class="table-container mb-4">
+
+<h5>Donations</h5>
+
+<table class="table table-hover mt-3">
+<thead>
+<tr>
+    <th>Medicine</th>
+    <th>Quantity</th>
+    <th>City</th>
+    <th>Expiry</th>
+    <th>Status</th>
+    <th>Action</th> <!-- ✅ Added Action Header -->
+</tr>
+</thead>
+
+<tbody>
+{% for d in donations %}
+<tr>
+    <td>{{ d.medicine_name }}</td>
+    <td>{{ d.quantity }}</td>
+    <td>{{ d.city }}</td>
+    <td>{{ d.expiry_date }}</td>
+    <td>
+        {% if d.status == "PENDING" %}
+            <span class="badge bg-warning text-dark">Pending</span>
+        {% elif d.status == "APPROVED" %}
+            <span class="badge bg-success">Approved</span>
+        {% elif d.status == "REJECTED" %}
+            <span class="badge bg-danger">Rejected</span>
+        {% else %}
+            <span class="badge bg-info">{{ d.status }}</span>
+        {% endif %}
+    </td>
+    
+    <!-- ✅ Added Donation Approve / Reject Actions -->
+    <td>
+        {% if d.status == "PENDING" %}
+            <form action="{% url 'approve_donation' d.id %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-approve">Approve</button>
+            </form>
+
+            <form action="{% url 'reject_donation' d.id %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-reject">Reject</button>
+            </form>
+        {% else %}
+            <span class="text-muted">Reviewed</span>
+        {% endif %}
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center">No donations</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+<!-- REQUESTS TABLE -->
+<div class="table-container">
+
+<h5>Requests</h5>
+
+<table class="table table-hover mt-3">
+
+<thead>
+<tr>
+    <th>NGO</th>
+    <th>Medicine</th>
+    <th>Reason</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for r in requests %}
+<tr>
+
+    <td>{{ r.ngo.username }}</td>
+    <td>{{ r.donation.medicine_name }}</td>
+    <td>{{ r.reason }}</td>
+
+    <!-- STATUS -->
+    <td>
+        {% if r.status == "REQUESTED" %}
+            <span class="badge bg-warning text-dark">Requested</span>
+
+        {% elif r.status == "APPROVED" %}
+            <span class="badge bg-info">Approved</span>
+
+        {% elif r.status == "PACKED" %}
+            <span class="badge bg-primary">Packed</span>
+
+        {% elif r.status == "OUT_FOR_DELIVERY" %}
+            <span class="badge bg-warning">Out for Delivery</span>
+
+        {% elif r.status == "DELIVERED" %}
+            <span class="badge bg-success">Delivered</span>
+
+        {% elif r.status == "REJECTED" %}
+            <span class="badge bg-danger">Rejected</span>
+        {% endif %}
+    </td>
+
+    <!-- ACTION BUTTONS -->
+    <td>
+
+        {% if r.status == "REQUESTED" %}
+            <form action="/approve/{{ r.id }}/" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-approve">Approve</button>
+            </form>
+
+            <form action="/reject/{{ r.id }}/" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-reject">Reject</button>
+            </form>
+
+        {% elif r.status == "APPROVED" %}
+            <form action="/packed/{{ r.id }}/" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-primary">Pack</button>
+            </form>
+
+        {% elif r.status == "PACKED" %}
+            <form action="/out/{{ r.id }}/" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-warning">Ship</button>
+            </form>
+
+        {% elif r.status == "OUT_FOR_DELIVERY" %}
+            <form action="/delivered/{{ r.id }}/" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success">Deliver</button>
+            </form>
+
+        {% else %}
+            <span class="text-muted">Completed</span>
+        {% endif %}
+
+    </td>
+
+</tr>
+{% empty %}
+<tr>
+    <td colspan="5" class="text-center">No requests</td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>

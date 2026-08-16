@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register</title>
+
+<style>
+body {
+    background: #eef3f5;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Card */
+.register-box {
+    width: 400px;
+    margin: 80px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+/* Title */
+.register-box h2 {
+    margin-bottom: 20px;
+    color: #0d6efd;
+}
+
+/* Inputs */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13,110,253,0.3);
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    margin-top: 15px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+button:hover {
+    background: #0b5ed7;
+}
+
+/* Link */
+.link {
+    margin-top: 15px;
+    display: block;
+    color: #555;
+    text-decoration: none;
+}
+
+.link:hover {
+    color: #0d6efd;
+}
+
+/* Label */
+label {
+    text-align: left;
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="register-box">
+
+    <h2>💙 MediShare Register</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" required>
+
+        <label>Email</label>
+        <input type="email" name="email" placeholder="Enter email" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" required>
+
+        <!-- ✅ PHONE FIELD --> 
+         <label>Phone Number</label> 
+         <input type="tel" name="phone" placeholder="Enter 10-digit phone number" pattern="[0-9]{10}" title="Enter valid 10 digit number">
+
+        <label>Select Role</label>
+        <select name="role">
+            <option value="DONOR">Donor</option>
+            <option value="NGO">NGO</option>
+        </select>
+
+        <button type="submit">Create Account</button>
+    </form>
+
+    <a href="/login/" class="link">Already have an account? Login</a>
+
+</div>
+
+</body>
+</html>
